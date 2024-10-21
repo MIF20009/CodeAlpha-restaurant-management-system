@@ -15,6 +15,10 @@ const orderSchema = new mongoose.Schema({
         enum : ["Pending", "In Progress", "Completed", "Cancelled"],
         default : "Pending",
     },
+    totalPrice : {
+        type : Number,
+        required : true,
+    },
 },{timestamps : true});
 
 const inventorySchema = new mongoose.Schema({
@@ -23,7 +27,7 @@ const inventorySchema = new mongoose.Schema({
 }, {timestamps : true});
 
 const reservationSchema = new mongoose.Schema({
-    customername : {type : String, required : true},
+    customerName : {type : String, required : true},
     date : {type : Date, required : true},
     time : {type : String, required : true},
     tableNumber : {type : Number, required : true},
