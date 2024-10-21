@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        table, th, td { border: 1px solid black; padding: 10px; }
+        th { background-color: #f2f2f2; }
+        h2 { margin-top: 20px; }
+        form { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Inventory Management</h1>
+
+    <h2 id="form-title">Add New Item</h2>
+    <form id="inventoryForm">
+        <input type="hidden" id="inventoryId"> <!-- Hidden input for updating an item -->
+        <label for="name">Item Name:</label>
+        <input type="text" id="name" required>
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" required>
+        <button type="submit" id="submitButton">Add Item</button>
+    </form>
+
+    <h2>Inventory List</h2>
+    <table id="inventoryTable">
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        function fetchInventory() {
+            fetch("/api/inventory")
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById("inventoryTable").querySelector("tbody");
+                tableBody.innerHTML = ""; // Clear existing rows
+                data.forEach(item => {
+                    const row = `<tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>
+                                        <button onclick="editItem('${item._id}', '${item.name}', '${item.quantity}')">Edit</button>
+                                        <button onclick="deleteItem('${item._id}')">Delete</button>
+                                    </td>
+                                 </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+        }
+
+        document.getElementById("inventoryForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const id = document.getElementById("inventoryId").value;
+            const name = document.getElementById("name").value;
+            const quantity = document.getElementById("quantity").value;
+
+            const url = id ? `/api/inventory/${id}` : "/api/inventory";
+            const method = id ? "PUT" : "POST";
+
+            fetch(url, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, quantity })
+            })
+            .then(() => {
+                document.getElementById("inventoryForm").reset();
+                document.getElementById("form-title").innerText = "Add New Item";
+                document.getElementById("submitButton").innerText = "Add Item";
+                fetchInventory();
+            });
+        });
+
+        function editItem(id, name, quantity) {
+            document.getElementById("inventoryId").value = id;
+            document.getElementById("name").value = name;
+            document.getElementById("quantity").value = quantity;
+            document.getElementById("form-title").innerText = "Edit Item";
+            document.getElementById("submitButton").innerText = "Update Item";
+        }
+
+        function deleteItem(id) {
+            fetch(`/api/inventory/${id}`, { method: "DELETE" })
+            .then(() => {
+                fetchInventory();
+            });
+        }
+
+        fetchInventory();
+    </script>
+</body>
+</html>
